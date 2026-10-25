@@ -1,0 +1,5 @@
+LightEntity : "{E5232DB58AC71F3D}Prefabs/Vehicles/Core/ELS_Lights/VehicleLight_ELS_Blue.et" {
+ ID "514ED7499ABC27FE"
+ Color 0.502 0 0 1
+ LensFlareScale 1
+}

@@ -1,0 +1,22 @@
+GameProject {
+ ID "DeltaDistrictELS"
+ GUID "68C715E1CF35B2D2"
+ TITLE "Emergency Light System (ELS)"
+ Dependencies {
+  "58D0FB3206B6F859"
+ }
+ Configurations {
+  GameProjectConfig PC {
+  }
+  GameProjectConfig XBOX_ONE {
+  }
+  GameProjectConfig XBOX_SERIES {
+  }
+  GameProjectConfig PS4 {
+  }
+  GameProjectConfig PS5 {
+  }
+  GameProjectConfig HEADLESS {
+  }
+ }
+}

@@ -1,0 +1,6 @@
+LightEntity : "{517183CCC69C207D}Prefabs/Vehicles/Core/ELS_Lights/VehicleLight_ELS_Red.et" {
+ ID "514ED7499ABC27FE"
+ Color 1 0.5965 0.0431 1
+ LV 5.5
+ VolLightFogBias 0.5
+}

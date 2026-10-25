@@ -1,0 +1,85 @@
+GameEntity : "{E4E782D6E138212A}Prefabs/Vehicles/Wheeled/UAZ452/Lights/ELS_LightFixture_Single_Clear.et" {
+ ID "54DEF484EE00449D"
+ components {
+  MeshObject "{54DEF48745980A1F}" {
+   Enabled 0
+  }
+  ParametricMaterialInstanceComponent "{54DEF48741497385}" {
+   Enabled 0
+  }
+  RigidBody "{607AF91C6961EB71}" {
+   Enabled 0
+  }
+  ActionsManagerComponent "{607AF25B1E930E81}" {
+   Enabled 0
+  }
+ }
+ {
+  $grp GameEntity : "{E4E782D6E138212A}Prefabs/Vehicles/Wheeled/UAZ452/Lights/ELS_LightFixture_Single_Clear.et" {
+   {
+    ID "68A92B35040BF981"
+    components {
+     SCR_DamageManagerComponent "{607AD7DE2D704BD9}" {
+      Enabled 0
+     }
+     ActionsManagerComponent "{607AF25B1E930E81}" {
+      Enabled 0
+     }
+     RplComponent "{607AD7DE2FFF4213}" {
+      Enabled 0
+     }
+    }
+    coords -0.207 0 0
+    angles 0 0 0
+   }
+   {
+    ID "68A92B3509843FF7"
+    components {
+     SCR_DamageManagerComponent "{607AD7DE2D704BD9}" {
+      Enabled 0
+     }
+     ActionsManagerComponent "{607AF25B1E930E81}" {
+      Enabled 0
+     }
+     RplComponent "{607AD7DE2FFF4213}" {
+      Enabled 0
+     }
+    }
+    coords -0.138 0 0
+    angles 0 0 0
+   }
+   {
+    ID "68A92B351B45EA68"
+    components {
+     SCR_DamageManagerComponent "{607AD7DE2D704BD9}" {
+      Enabled 0
+     }
+     ActionsManagerComponent "{607AF25B1E930E81}" {
+      Enabled 0
+     }
+     RplComponent "{607AD7DE2FFF4213}" {
+      Enabled 0
+     }
+    }
+    coords -0.069 0 0
+    angles 0 0 0
+   }
+   {
+    ID "68A92B3536380B80"
+    components {
+     SCR_DamageManagerComponent "{607AD7DE2D704BD9}" {
+      Enabled 0
+     }
+     ActionsManagerComponent "{607AF25B1E930E81}" {
+      Enabled 0
+     }
+     RplComponent "{607AD7DE2FFF4213}" {
+      Enabled 0
+     }
+    }
+    coords 0 0 0
+    angles 0 0 0
+   }
+  }
+ }
+}

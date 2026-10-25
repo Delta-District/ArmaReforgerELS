@@ -1,0 +1,17 @@
+GameEntity : "{A50B7F75B249F351}Prefabs/Vehicles/Core/Lights/VehicleEmissiveSurface_Base.et" {
+ ID "54DEF484EE00449D"
+ components {
+  MeshObject "{54DEF48745980A1F}" {
+   Object "{5476879B2CF54783}Assets/Vehicles/Wheeled/UAZ452/Lights/UAZ452_License_Plate_Light.xob"
+   LODFactors {
+    2 1
+   }
+   PixelSizeScale 10
+  }
+  RigidBody "{607AF91C6961EB71}" {
+   Enabled 0
+  }
+ }
+ coords -0.412 0 0
+ angles 90 180 -180
+}
