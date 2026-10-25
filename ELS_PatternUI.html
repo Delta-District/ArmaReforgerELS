@@ -1,0 +1,1851 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Emergency Light Pattern Builder</title>
+  <style>
+    :root{
+      --bg:#0b0f16; --text:#e6edf7; --muted:#96a3b6; --border:rgba(255,255,255,0.10);
+      --accent:#4aa3ff; --off:rgba(255,255,255,0.07); --shadow:rgba(0,0,0,0.35); --radius:14px;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(1200px 700px at 20% 10%, #142140 0%, var(--bg) 55%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding:18px;
+    }
+    .app{
+      display:grid;
+      grid-template-columns:1.05fr 0.95fr;
+      gap:16px;
+      align-items:start;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:0 16px 40px var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      background:rgba(0,0,0,0.14);
+      gap:12px;
+    }
+    .titleBlock{display:flex; flex-direction:column; gap:2px}
+    .title{font-size:14px; font-weight:650; letter-spacing:0.2px}
+    .subtitle{font-size:12px; color:var(--muted)}
+    .toolbar{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center}
+    button,input,select{font:inherit}
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      padding:9px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      transition:transform 0.05s ease, background 0.15s ease, border-color 0.15s ease;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      line-height:1;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .btn:hover{background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.16)}
+    .btn:active{transform:translateY(1px)}
+    .btnPrimary{background:rgba(74,163,255,0.14); border-color:rgba(74,163,255,0.35)}
+    .btnPrimary:hover{background:rgba(74,163,255,0.20)}
+    .btnDanger{background:rgba(255,80,80,0.12); border-color:rgba(255,80,80,0.28)}
+    .btnDanger:hover{background:rgba(255,80,80,0.18)}
+    .content{padding:14px 16px 16px}
+    .rows{display:flex; flex-direction:column; gap:12px}
+    .row{
+      background:rgba(0,0,0,0.18);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+    }
+    .rowTop{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    .rowLabel{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+    .stepIndex{font-weight:700; font-size:13px; color:var(--accent)}
+    .hint{font-size:12px; color:var(--muted)}
+    .metaLine{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px}
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--muted);
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      white-space:nowrap;
+    }
+    .pill strong{color:var(--text); font-weight:650}
+    .pill input[type="checkbox"]{transform:translateY(1px)}
+    .filterBar{
+      display:flex;
+      gap:4px;
+      align-items:center;
+      padding:10px 10px 0;
+    }
+    .filterBar .spacer{flex:1}
+    .select{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      outline:none;
+    }
+    .select:focus{
+      border-color:rgba(74,163,255,0.45);
+      box-shadow:0 0 0 3px rgba(74,163,255,0.16);
+    }
+    .sides{
+      display:grid;
+      grid-template-columns:repeat(9, minmax(46px, 1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .sideBtn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:9px 0;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      cursor:pointer;
+      transition:background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+      font-size:12px;
+      letter-spacing:0.3px;
+      user-select:none;
+    }
+    .sideBtn:hover{background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.16)}
+    .sideBtn:active{transform:translateY(1px)}
+    .sideBtn.on{background:rgba(255,59,59,0.16); border-color:rgba(255,59,59,0.45)}
+    .sideBtn.disabled{opacity:0.35; pointer-events:none; filter:grayscale(0.4)}
+
+    /* Controls layout */
+    .rowControls{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:stretch;
+      justify-content:flex-start;
+      min-width:140px;
+    }
+    .field{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:6px;
+      width:100%;
+    }
+    .field label{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .field input{
+      width:100%;
+      max-width:120px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--text);
+      padding:9px 10px;
+      outline:none;
+    }
+    .field input:focus{border-color:rgba(74,163,255,0.45); box-shadow:0 0 0 3px rgba(74,163,255,0.16)}
+
+    .miniBtns{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    /* Preview + arrows row */
+    .bottomRow{
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    /* Preview */
+    .previewWrap{display:grid; gap:12px}
+    .statusBar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      position:sticky;
+      top:0;
+      z-index:5;
+      backdrop-filter:blur(10px);
+      background:rgba(0,0,0,0.32);
+    }
+    .previewStage{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(0,0,0,0.18);
+      padding:14px;
+      display:grid;
+      gap:12px;
+      max-height:calc(100vh - 190px);
+      overflow-y:auto;
+      overscroll-behavior:contain;
+    }
+    .section{border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.02); padding:12px; display:grid; gap:10px}
+    .sectionHeader{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+    .sectionHeader .name{font-size:13px; font-weight:650; letter-spacing:0.2px}
+    .sectionHeader .map{font-size:12px; color:var(--muted)}
+    .boxes{display:grid; gap:10px}
+    .box{
+      height:52px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--off);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      color:rgba(230,237,247,0.85);
+      letter-spacing:0.2px;
+      position:relative;
+      overflow:hidden;
+    }
+    .box.on{background:rgba(255,59,59,0.20); border-color:rgba(255,59,59,0.45)}
+    .box.on::after{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background:radial-gradient(circle at 50% 50%, rgba(255,59,59,0.55), rgba(255,59,59,0.00) 60%);
+      filter:blur(1px);
+    }
+    .footerNote{font-size:12px; color:var(--muted); line-height:1.35}
+
+    /* Library */
+    .libraryCard{grid-column:1 / -1}
+    .libBody{max-height:340px; overflow-y:auto; display:grid; gap:14px}
+    .libGroupTitle{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px}
+    .libItems{display:flex; flex-wrap:wrap; gap:8px}
+    .libItem{
+      border:1px solid var(--border); background:rgba(0,0,0,0.18); color:var(--text);
+      border-radius:10px; padding:8px 10px; cursor:pointer; display:grid; gap:6px;
+      min-width:150px; text-align:left; font:inherit;
+    }
+    .libItem:hover{border-color:rgba(255,255,255,0.18)}
+    .libItem.active{border-color:rgba(74,163,255,0.6); background:rgba(74,163,255,0.10)}
+    .libItem.newCard{background:transparent; border-style:dashed; color:var(--muted); display:flex; align-items:center; justify-content:center; font-weight:600}
+    .libItem.newCard:hover, .libItem.newCard.active{color:var(--text)}
+    .libItem.dragging{opacity:0.35}
+    .libItem.dropBefore{box-shadow:-3px 0 0 var(--accent)}
+    .libItem.dropAfter{box-shadow:3px 0 0 var(--accent)}
+    .libName{font-size:13px; font-weight:650}
+    .libFile{font-size:11px; color:var(--muted)}
+    .libWarn{font-size:11px; color:#ffb347}
+    .libIssues{font-size:12px; color:#ffb347; display:grid; gap:4px}
+    .mini{display:flex; gap:4px; align-items:center; flex-wrap:wrap}
+    .miniStep{display:flex; gap:3px; opacity:0.5; transition:opacity 0.15s ease}
+    .miniStep.playing{opacity:1}
+    .modeSwitch{display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden}
+    .modeSwitch .btn{border:0; border-radius:0}
+    .modeSwitch .btn.active{background:rgba(74,163,255,0.22); color:var(--text)}
+    .miniCell{width:12px; height:12px; border-radius:3px; background:rgba(255,255,255,0.12)}
+    .miniCell.on{background:rgba(255,59,59,0.95); box-shadow:0 0 8px rgba(255,59,59,0.8)}
+    .nameInput{
+      border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text);
+      padding:8px 10px; border-radius:10px; outline:none; min-width:200px;
+    }
+    .nameInput:focus{border-color:rgba(74,163,255,0.45); box-shadow:0 0 0 3px rgba(74,163,255,0.16)}
+    textarea.io{
+      width:100%; min-height:140px; resize:vertical; margin-top:10px;
+      border:1px solid var(--border); background:rgba(0,0,0,0.25); color:var(--text);
+      border-radius:10px; padding:10px; font-family:ui-monospace,Consolas,monospace; font-size:12px; outline:none;
+    }
+
+    /* ---- Builder refresh ---- */
+    .cardHeader{align-items:flex-start}
+    .filterBar{gap:6px; padding:12px 16px 0; flex-wrap:wrap}
+    .filterBar .hint{margin-right:4px; text-transform:uppercase; letter-spacing:0.6px; font-size:11px}
+    .chip{
+      display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;
+      font-size:12px; padding:6px 11px; border-radius:999px; border:1px solid var(--border);
+      background:rgba(255,255,255,0.03); color:var(--muted); transition:all 0.15s ease;
+    }
+    .chip input{display:none}
+    .chip:has(input:checked){color:var(--text); background:rgba(74,163,255,0.16); border-color:rgba(74,163,255,0.45)}
+    .btnSmall{padding:6px 9px; font-size:12px}
+    .rows{gap:6px}
+    .row{
+      grid-template-columns:52px 1fr auto; align-items:center; gap:12px;
+      padding:8px 10px; border-radius:10px; cursor:pointer;
+      transition:border-color 0.15s ease, background 0.15s ease;
+    }
+    .row:hover{border-color:rgba(255,255,255,0.18)}
+    .row.current{border-color:rgba(74,163,255,0.6); background:rgba(74,163,255,0.08); box-shadow:inset 3px 0 0 var(--accent)}
+    .row.pause{background:transparent; border-style:dashed; padding-top:4px; padding-bottom:4px}
+    .stepIndex{display:flex; flex-direction:column; align-items:center; line-height:1.1}
+    .stepIndex span{font-size:15px; font-weight:700}
+    .stepIndex small{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px}
+    .row.pause .stepIndex span{color:var(--muted)}
+    .rowBody{display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; min-width:0}
+    .pauseLine{flex:0 0 40px; height:2px; background:repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 8px); opacity:0.5}
+    .idGroup{display:flex; align-items:center; gap:6px}
+    .idGroupLabel{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; width:24px}
+    .idBtns{display:flex; gap:4px}
+    .idGap{width:6px}
+    .sideBtn{
+      width:30px; height:30px; padding:0; font:inherit; font-size:11px; color:var(--muted);
+      border-radius:8px; background:rgba(255,255,255,0.04);
+    }
+    .sideBtn.on{color:#fff; background:rgba(255,59,59,0.85); border-color:rgba(255,120,120,0.9); box-shadow:0 0 10px rgba(255,59,59,0.55)}
+    .rowControls{flex-direction:row; align-items:center; gap:4px; min-width:0}
+    .multField{
+      display:inline-flex; align-items:center; gap:2px; margin-right:6px; font-size:12px; color:var(--muted);
+      border:1px solid var(--border); border-radius:8px; padding:0 0 0 8px; background:rgba(255,255,255,0.03);
+    }
+    .multField input{width:52px; border:0; background:transparent; color:var(--text); padding:6px 4px; outline:none; font:inherit}
+    .iconBtn{
+      width:28px; height:28px; border-radius:8px; border:1px solid transparent; background:transparent;
+      color:var(--muted); cursor:pointer; font:inherit; font-size:13px; line-height:1;
+    }
+    .iconBtn:hover:not(:disabled){background:rgba(255,255,255,0.07); color:var(--text); border-color:var(--border)}
+    .iconBtn.danger:hover{background:rgba(255,80,80,0.18); color:#ff8a8a}
+    .iconBtn:disabled{opacity:0.25; cursor:default}
+    /* Only text fields are selectable; stops drag/click from highlighting the page */
+    body{user-select:none; -webkit-user-select:none}
+    input, textarea{user-select:text; -webkit-user-select:text}
+    .grip{cursor:grab; color:var(--muted); font-size:14px; line-height:1; opacity:0.5; padding:2px 4px}
+    .row:hover .grip{opacity:1}
+    .row.dragging{opacity:0.35}
+    .row.dropBefore{box-shadow:0 -3px 0 var(--accent)}
+    .row.dropAfter{box-shadow:0 3px 0 var(--accent)}
+    .emptyNote{padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:12px; font-size:13px}
+    .previewStage{gap:10px}
+    .section[hidden]{display:none}
+    .box{height:44px; border-radius:8px; font-size:11px; color:var(--muted); transition:background 0.06s linear}
+    .box.on{color:#fff; background:rgba(255,59,59,0.55); border-color:rgba(255,120,120,0.85); box-shadow:0 0 18px rgba(255,59,59,0.45)}
+    .statusBar{gap:6px; padding:8px}
+    .statusBar .pill{padding:4px 8px}
+
+    /* ---- Shell, top bar, light colors ---- */
+    :root{--la:255,45,45; --lb:40,120,255; --lw:255,150,20}
+    .cA{--lc:var(--la)} .cB{--lc:var(--lb)} .cW{--lc:var(--lw)}
+    body{display:block; padding:16px 8px}
+    #libraryCard > .cardHeader{cursor:pointer}
+    #libraryCard[data-size="collapsed"] .libBody{display:none}
+    #libraryCard[data-size="full"] .libBody{max-height:none}
+    .libSize{min-width:64px}
+    @media (min-width:981px){ .app{grid-template-columns:minmax(0,1.45fr) minmax(0,0.75fr)} }
+    .slots{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+    .slot{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:6px; padding:6px 8px; border-radius:10px;
+      border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03)}
+    .slot.loaded{border-color:rgba(74,163,255,0.45); background:rgba(74,163,255,0.08)}
+    .slot small{font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted)}
+    .slot select{min-width:0; width:100%; font:inherit; font-size:12px; color:var(--text); background:rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:3px 4px}
+    .slot .iconBtn:disabled{opacity:0.3}
+    .shell{max-width:1650px; margin:0 auto; display:grid; gap:16px}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+      padding:10px 16px; border:1px solid var(--border); border-radius:var(--radius);
+      background:rgba(0,0,0,0.28); backdrop-filter:blur(10px); box-shadow:0 10px 30px var(--shadow);
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-size:16px; font-weight:700; letter-spacing:0.4px}
+    .brandDot{width:12px; height:12px; border-radius:50%; animation:brandFlash 1s steps(1) infinite}
+    @keyframes brandFlash{
+      0%{background:rgb(var(--la)); box-shadow:0 0 10px rgb(var(--la))}
+      50%{background:rgb(var(--lb)); box-shadow:0 0 10px rgb(var(--lb))}
+    }
+    .settings{display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+    .setting{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted)}
+    .setting .select{padding:7px 10px; font-size:13px}
+    .setting .select option{background:#141b28}
+    .modeSwitch .btn{padding:7px 10px}
+
+    .sideBtn.on{background:rgba(var(--lc),0.85); border-color:rgba(var(--lc),1); box-shadow:0 0 10px rgba(var(--lc),0.55)}
+    .miniCell.on{background:rgb(var(--lc)); box-shadow:0 0 8px rgba(var(--lc),0.8)}
+
+    /* Preview: each group is a dark lightbar housing with lenses */
+    .statusBar{display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; padding:8px; position:static}
+    .stat{display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 4px; border-radius:8px; background:rgba(255,255,255,0.03)}
+    .stat small{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px}
+    .stat strong{font-size:14px; font-variant-numeric:tabular-nums}
+    .previewStage{background:radial-gradient(600px 300px at 50% 0%, rgba(255,255,255,0.04), transparent), rgba(0,0,0,0.3); gap:14px}
+    .section{background:transparent; border:0; padding:0; gap:6px}
+    .sectionHeader .name{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; font-weight:600}
+    .sectionHeader .map{font-size:11px}
+    .lightbar{
+      display:flex; gap:6px; padding:6px; border-radius:12px;
+      background:linear-gradient(180deg, #1a1f29, #0d1017); border:1px solid rgba(255,255,255,0.08);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 16px rgba(0,0,0,0.4);
+    }
+    /* Every lens is sized off the stage width (primary's 8 + gap fill it), so all groups match */
+    .boxes{container-type:inline-size; display:flex; justify-content:center}
+    .lightbar{display:inline-flex}
+    .barGap{flex:0 0 14px}
+    .box{
+      flex:0 0 auto; width:min(52px, calc((100cqw - 60px) / 9)); height:24px; border-radius:7px; border:1px solid rgba(255,255,255,0.06);
+      background:linear-gradient(180deg, rgba(var(--lc),0.10), rgba(var(--lc),0.04));
+      position:relative; overflow:hidden; transition:background 0.05s linear, box-shadow 0.05s linear;
+    }
+    .box.on::after{display:none}
+    .lens{position:absolute; inset:0; background:repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 6px)}
+    .boxId{position:absolute; right:5px; bottom:3px; font-size:10px; color:rgba(255,255,255,0.35)}
+    .box.on{
+      background:radial-gradient(ellipse at 50% 50%, #fff 0%, rgb(var(--lc)) 45%, rgba(var(--lc),0.7) 100%);
+      border-color:rgba(var(--lc),1); box-shadow:0 0 22px 2px rgba(var(--lc),0.65);
+    }
+    .box.on .boxId{color:rgba(255,255,255,0.85)}
+
+    @media (max-width:980px){
+      .app{grid-template-columns:1fr}
+      .row{grid-template-columns:40px 1fr; }
+      .rowControls{grid-column:2}
+      .previewStage{max-height:none}
+    }
+    @media (min-width:981px){
+      #previewCard{
+        position:sticky;
+        top:18px;
+        align-self:start;
+        max-height:calc(100vh - 36px);
+      }
+      #previewCard .content{overflow:hidden}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+  <header class="topbar">
+    <div class="brand"><span class="brandDot"></span>ELS Interface</div>
+    <div class="settings">
+      <label class="setting">
+        <span>Library preview</span>
+        <div class="modeSwitch" title="How the library cards play their flash pattern">
+          <button class="btn active" id="hoverPlayBtn" title="Play a card's pattern while hovering it">Hover Play</button>
+          <button class="btn" id="autoPlayBtn" title="Play every card currently visible in the list">Auto Play</button>
+        </div>
+      </label>
+      <label class="chip" title="Preview only: show each warning ID (13-16) as two lights">
+        <input type="checkbox" id="warning2xChk" /> Warning 2x
+      </label>
+      <label class="setting">
+        <span>Light colors</span>
+        <select class="select" id="colorSelect" title="Left side: IDs 1-4, 9, 10, 17 · Right side: IDs 5-8, 11, 12, 18 · Warning is always amber">
+          <option value="red-blue">Red / Blue</option>
+          <option value="blue-red">Blue / Red</option>
+          <option value="blue-blue">Blue / Blue</option>
+        </select>
+      </label>
+    </div>
+  </header>
+  <div class="app">
+    <!-- TOP: Library -->
+    <section class="card libraryCard" id="libraryCard">
+      <div class="cardHeader">
+        <div class="titleBlock">
+          <div class="title">Pattern Library</div>
+          <div class="subtitle" id="libSubtitle">No patterns found yet. Click Open Patterns Folder and pick the folder this page is in — it will remember it and create patterns.js.</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btnPrimary" id="openFolderBtn">Open Patterns Folder</button>
+          <button class="btn" id="rescanBtn" disabled>Rescan</button>
+          <select class="btn libSize" id="libSizeSel" title="Expanded height (click the header to collapse/expand)">
+            <option value="half">Half</option>
+            <option value="full">Full</option>
+          </select>
+          <input type="file" id="folderInput" webkitdirectory multiple style="display:none" />
+        </div>
+      </div>
+      <div class="content libBody" id="libraryList">
+        <div class="footerNote">No folder opened yet.</div>
+      </div>
+    </section>
+
+    <!-- LEFT: Editor -->
+    <section class="card" id="editorCard">
+      <div class="cardHeader">
+        <div class="titleBlock">
+          <div class="title">Pattern Builder</div>
+          <div class="subtitle">Steps play top to bottom and loop. Click a row to preview it; × is the duration multiplier.</div>
+          <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">
+            <input class="nameInput" id="nameInput" placeholder="Pattern name (in-game label)" />
+            <span class="hint" id="fileLabel">Not linked to a file</span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btnPrimary" id="addStepBtn">+ Step</button>
+          <button class="btn" id="addPauseBtn">+ Pause</button>
+          <button class="btn" id="playBtn">▶ Play</button>
+          <button class="btn" id="stopBtn">■ Stop</button>
+          <button class="btn btnDanger" id="clearBtn">Clear</button>
+        </div>
+      </div>
+
+      <div class="filterBar" id="filterBar"></div>
+
+      <div class="content">
+        <div class="rows" id="rows"></div>
+
+        <div style="height:12px"></div>
+        <div class="footerNote">
+          Hidden groups keep their lights; they're only dropped from the file when “Export filtered” is ticked.
+          Flash/Pause speeds are preview-only — in game they're set per vehicle.
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="toolbar" style="justify-content:flex-start">
+          <button class="btn btnPrimary" id="saveBtn" title="Write back to the linked .conf (or choose a file if not linked)">Save</button>
+          <button class="btn" id="saveAsBtn" title="Save as a new .conf file">Save As…</button>
+          <button class="btn" id="exportBtn" title="Write Reforger script into the box below and copy it">Export Script</button>
+          <button class="btn" id="importBtn" title="Load Reforger script (or legacy JSON) from the box below">Import Script</button>
+          <label class="pill" title="If enabled, export masks using only the selected Show groups">
+            <input type="checkbox" id="exportFilteredChk" />
+            Export filtered
+          </label>
+        </div>
+        <textarea class="io" id="ioBox" spellcheck="false" placeholder="Paste a DD_EmergencyPatternDef { ... } here, or click Export Script."></textarea>
+      </div>
+    </section>
+
+    <!-- RIGHT: Preview -->
+    <section class="card" id="previewCard">
+      <div class="cardHeader">
+        <div class="titleBlock">
+          <div class="title">Visual Preview</div>
+          <div class="subtitle">Secondary, Primary, Warning, Accessory.</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="previewWrap">
+          <div class="slots" id="slotBar" title="Load a library pattern into a group to preview it together with the editor"></div>
+          <div class="statusBar">
+            <div class="stat"><small>Step</small><strong id="statusStep">—</strong></div>
+            <div class="stat"><small>Type</small><strong id="statusType">—</strong></div>
+            <div class="stat"><small>Base</small><strong id="statusBase">—</strong></div>
+            <div class="stat"><small>×</small><strong id="statusMult">—</strong></div>
+            <div class="stat"><small>Final ms</small><strong id="statusDur">—</strong></div>
+            <div class="stat"><small>Mask</small><strong id="statusMask">—</strong></div>
+          </div>
+
+          <div class="previewStage">
+            <div class="section" data-group="secondary">
+              <div class="sectionHeader"><div class="name">Secondary</div><div class="map">9–12</div></div>
+              <div class="boxes" id="secondaryBoxes"></div>
+            </div>
+            <div class="section" data-group="primary">
+              <div class="sectionHeader"><div class="name">Primary</div><div class="map">1–8</div></div>
+              <div class="boxes" id="primaryBoxes"></div>
+            </div>
+            <div class="section" data-group="warning">
+              <div class="sectionHeader"><div class="name">Warning</div><div class="map">13–16</div></div>
+              <div class="boxes" id="warningBoxes"></div>
+            </div>
+            <div class="section" data-group="accessory">
+              <div class="sectionHeader"><div class="name">Accessory</div><div class="map">17–18</div></div>
+              <div class="boxes" id="accessoryBoxes"></div>
+            </div>
+          </div>
+
+          <div class="footerNote">
+            Playback uses global Flash/Pause base speed with each item’s multiplier. Pauses always output mask 0.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  </div>
+
+  <script src="patterns.js"></script>
+  <script>
+    const IDS = Array.from({ length: 18 }, (_, i) => i + 1);
+    const ID_BIT = Object.fromEntries(IDS.map(id => [id, id - 1]));
+
+    // Primary should be first in filter checkboxes
+    const GROUPS = [
+      { key: "primary",   label: "Primary",   ids: [1, 2, 3, 4, 5, 6, 7, 8] },
+      { key: "secondary", label: "Secondary", ids: [9, 10, 11, 12] },
+      { key: "warning",   label: "Warning",   ids: [13, 14, 15, 16] },
+      { key: "accessory", label: "Accessory", ids: [17, 18] }
+    ];
+
+    const enabledGroups = new Set(GROUPS.map(g => g.key));
+
+    function idsForEnabledGroups() {
+      const s = new Set();
+      for (const g of GROUPS) if (enabledGroups.has(g.key)) g.ids.forEach(id => s.add(id));
+      return [...s].sort((a, b) => a - b);
+    }
+
+    function computeMask(step, allowedIds = IDS) {
+      if (step.type === "pause") return 0n;
+      let mask = 0n;
+      for (const id of allowedIds) if (step.sides[id]) mask |= (1n << BigInt(ID_BIT[id]));
+      return mask;
+    }
+
+    function maskToBits(mask) {
+      let out = "";
+      for (let b = 17; b >= 0; b--) out += ((mask >> BigInt(b)) & 1n) ? "1" : "0";
+      return out;
+    }
+
+    const SPEED_OPTIONS = [100, 250, 500];
+    let globalFlashMs = 250;
+    let globalPauseMs = 250;
+
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+    function toMult(v) {
+      const n = Number(v);
+      if (Number.isNaN(n)) return 1.0;
+      return Math.round(clamp(n, 0.0, 2.0) * 100) / 100;
+    }
+    function effectiveDuration(step) {
+      const base = (step.type === "pause") ? globalPauseMs : globalFlashMs;
+      const mult = toMult(step.multiplier ?? 1.0);
+      return Math.max(1, Math.round(base * mult));
+    }
+
+    function makeSidesFromActive(activeIDs) {
+      const sides = {};
+      IDS.forEach(id => sides[id] = false);
+      (activeIDs || []).forEach(v => {
+        const id = Number(v);
+        if (IDS.includes(id)) sides[id] = true;
+      });
+      return sides;
+    }
+    // uid = Workbench inline object ID ("{68A00CF488B517FD}"); kept on import, generated lazily on export
+    function newUid() {
+      return [...crypto.getRandomValues(new Uint8Array(8))]
+        .map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+    }
+    function makeStep(activeIDs = []) { return { type: "step", multiplier: 1.0, sides: makeSidesFromActive(activeIDs), uid: newUid() }; }
+    function makePause() { return { type: "pause", multiplier: 1.0, sides: makeSidesFromActive([]), uid: newUid() }; }
+
+    let steps = [
+      makeStep([1, 3, 5, 7, 9, 11, 13, 16, 17]),
+      makeStep([2, 4, 6, 8, 10, 12, 14, 15, 18]),
+      makePause()
+    ];
+
+    let playing = false;
+    let playIndex = 0;
+    let playTimer = null;
+
+    const rowsEl = document.getElementById("rows");
+    const addStepBtn = document.getElementById("addStepBtn");
+    const addPauseBtn = document.getElementById("addPauseBtn");
+    const playBtn = document.getElementById("playBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const exportFilteredChk = document.getElementById("exportFilteredChk");
+    const ioBox = document.getElementById("ioBox");
+
+    const filterBarEl = document.getElementById("filterBar");
+
+    const statusStep = document.getElementById("statusStep");
+    const statusType = document.getElementById("statusType");
+    const statusBase = document.getElementById("statusBase");
+    const statusMult = document.getElementById("statusMult");
+    const statusDur  = document.getElementById("statusDur");
+    const statusMask = document.getElementById("statusMask");
+
+    const secondaryBoxes = document.getElementById("secondaryBoxes");
+    const primaryBoxes = document.getElementById("primaryBoxes");
+    const warningBoxes = document.getElementById("warningBoxes");
+    const accessoryBoxes = document.getElementById("accessoryBoxes");
+
+    const SECONDARY_LAYOUT = [[9, 10, null, 11, 12]];
+    const PRIMARY_LAYOUT   = [[1, 2, 3, 4, null, 5, 6, 7, 8]];
+    const WARNING_LAYOUT   = [[13, 14, 15, 16]];
+    const ACCESSORY_LAYOUT = [[17, 18]];
+
+    // Light color by side: left = 1-4, 9, 10, 17 · right = 5-8, 11, 12, 18 · warning = amber
+    const LEFT_IDS = new Set([1, 2, 3, 4, 9, 10, 17]);
+    const lightClass = id => (id >= 13 && id <= 16) ? "cW" : LEFT_IDS.has(id) ? "cA" : "cB";
+
+    const COLOR_SCHEMES = { "red-blue": ["255,45,45", "40,120,255"], "blue-red": ["40,120,255", "255,45,45"], "blue-blue": ["40,120,255", "40,120,255"] };
+    const colorSelect = document.getElementById("colorSelect");
+    function setColorScheme(key) {
+      const [a, b] = COLOR_SCHEMES[key] || COLOR_SCHEMES["red-blue"];
+      document.documentElement.style.setProperty("--la", a);
+      document.documentElement.style.setProperty("--lb", b);
+      colorSelect.value = COLOR_SCHEMES[key] ? key : "red-blue";
+      try { localStorage.setItem("els.colors", colorSelect.value); } catch { /* storage blocked */ }
+    }
+    colorSelect.addEventListener("change", () => setColorScheme(colorSelect.value));
+    try { setColorScheme(localStorage.getItem("els.colors")); } catch { setColorScheme("red-blue"); }
+
+    function makeLayoutBoxes(container, layout) {
+      container.innerHTML = "";
+      for (const row of layout) {
+        const rowEl = document.createElement("div");
+        rowEl.className = "lightbar";
+        for (const cell of row) {
+          if (cell == null) {
+            rowEl.appendChild(Object.assign(document.createElement("div"), { className: "barGap" }));
+            continue;
+          }
+          const d = document.createElement("div");
+          d.className = "box " + lightClass(cell);
+          d.dataset.id = String(cell);
+          d.innerHTML = `<span class="lens"></span><span class="boxId">${cell}</span>`;
+          rowEl.appendChild(d);
+        }
+        container.appendChild(rowEl);
+      }
+    }
+
+    makeLayoutBoxes(secondaryBoxes, SECONDARY_LAYOUT);
+    makeLayoutBoxes(primaryBoxes, PRIMARY_LAYOUT);
+    makeLayoutBoxes(warningBoxes, WARNING_LAYOUT);
+    makeLayoutBoxes(accessoryBoxes, ACCESSORY_LAYOUT);
+
+    // Library: header click collapses/expands; the dropdown picks the expanded height (half/full)
+    const libraryCard = document.getElementById("libraryCard");
+    const libSizeSel = document.getElementById("libSizeSel");
+    let libCollapsed = false;
+    function applyLibSize() {
+      libraryCard.dataset.size = libCollapsed ? "collapsed" : libSizeSel.value;
+      try { localStorage.setItem("els.libSize", JSON.stringify({ size: libSizeSel.value, collapsed: libCollapsed })); } catch { /* storage blocked */ }
+    }
+    libSizeSel.addEventListener("change", () => { libCollapsed = false; applyLibSize(); });
+    libraryCard.querySelector(".cardHeader").addEventListener("click", e => {
+      if (e.target.closest("button, input, select, label")) return;
+      libCollapsed = !libCollapsed;
+      applyLibSize();
+    });
+    try {
+      const saved = JSON.parse(localStorage.getItem("els.libSize"));
+      if (saved?.size === "full") libSizeSel.value = "full";
+      libCollapsed = !!saved?.collapsed;
+    } catch { /* default: half, expanded */ }
+    applyLibSize();
+
+    // ---------- Preview slots: one library pattern per group, each looping on its own timer ----------
+    // A loaded slot owns its group's lights; empty slots show the editor. Preview-only.
+    const layers = {}; // groupKey -> { entry, items, idx, timer }
+    const slotBar = document.getElementById("slotBar");
+    const SLOT_LABELS = { primary: "Primary", secondary: "Secondary", warning: "Warning", accessory: "Accessory" };
+    const SLOT_ORDER = ["secondary", "primary", "warning", "accessory"];
+
+    function layerTick(key) {
+      const L = layers[key];
+      if (!L) return;
+      const st = L.items[L.idx];
+      const ids = GROUPS.find(g => g.key === key).ids;
+      document.querySelectorAll(`.section[data-group="${key}"] .box`).forEach(box => {
+        box.classList.toggle("on", st.type !== "pause" && ids.includes(+box.dataset.id) && !!st.sides[box.dataset.id]);
+      });
+      if (playing) L.timer = setTimeout(() => { L.idx = (L.idx + 1) % L.items.length; layerTick(key); }, effectiveDuration(st));
+    }
+
+    // Everything restarts at step 1 together, like the lights switching on in-game.
+    // Slots follow Play/Stop: they only animate while playing, otherwise hold step 1.
+    function restartLayers() {
+      for (const key in layers) { clearTimeout(layers[key].timer); layers[key].idx = 0; layerTick(key); }
+      if (playing) { clearTimeout(playTimer); playIndex = 0; playLoop(); }
+    }
+
+    function setSlot(key, entry) {
+      if (layers[key]) clearTimeout(layers[key].timer);
+      delete layers[key];
+      const items = entry ? parseConf(entry.text).steps : [];
+      if (entry && items.length) layers[key] = { entry, items, idx: 0, timer: null };
+      renderSlots();
+      render();
+      restartLayers();
+    }
+
+    function renderSlots() {
+      slotBar.innerHTML = "";
+      for (const key of SLOT_ORDER) {
+        const L = layers[key];
+        const slot = document.createElement("div");
+        slot.className = "slot" + (L ? " loaded" : "");
+        slot.innerHTML = `<small>${SLOT_LABELS[key]}</small>`;
+        const sel = document.createElement("select");
+        sel.add(new Option("Editor", ""));
+        library.forEach((e, i) => {
+          if (groupsUsed(e.parsed.steps).some(g => g.key === key)) sel.add(new Option(e.parsed.name || e.file, String(i), false, L?.entry === e));
+        });
+        sel.addEventListener("change", () => setSlot(key, library[+sel.value] || null));
+        const clr = iconBtn("✕", "Clear — back to the editor", () => setSlot(key, null));
+        clr.disabled = !L;
+        slot.append(sel, clr);
+        slotBar.appendChild(slot);
+      }
+    }
+
+    // Warning 2x: preview-only, each warning ID drives two lights (13,13,14,14,...)
+    const warning2xChk = document.getElementById("warning2xChk");
+    function setWarning2x(on) {
+      warning2xChk.checked = on;
+      makeLayoutBoxes(warningBoxes, on ? [WARNING_LAYOUT[0].flatMap(id => [id, id])] : WARNING_LAYOUT);
+      try { localStorage.setItem("els.warning2x", on ? "1" : "0"); } catch { /* storage blocked */ }
+    }
+    warning2xChk.addEventListener("change", () => {
+      setWarning2x(warning2xChk.checked);
+      if (steps.length) setPreview(steps[playIndex]);
+    });
+    try { setWarning2x(localStorage.getItem("els.warning2x") === "1"); } catch { /* default off */ }
+
+    function setPreview(step) {
+      const allowedIds = idsForEnabledGroups();
+      const mask = computeMask(step, allowedIds);
+      const dur = effectiveDuration(step);
+      const base = (step.type === "pause") ? globalPauseMs : globalFlashMs;
+
+      const setContainer = (container) => {
+        if (layers[container.closest(".section").dataset.group]) return; // group driven by a loaded slot
+        [...container.querySelectorAll(".box")].forEach(box => {
+          const id = Number(box.dataset.id);
+          const on = (step.type !== "pause") && !!step.sides[id];
+          box.classList.toggle("on", on);
+        });
+      };
+
+      setContainer(secondaryBoxes);
+      setContainer(primaryBoxes);
+      setContainer(warningBoxes);
+      setContainer(accessoryBoxes);
+      rowsEl.querySelectorAll(".row").forEach(r => r.classList.toggle("current", Number(r.dataset.index) === playIndex));
+
+      statusStep.textContent = steps.length ? String(playIndex + 1) : "—";
+      statusType.textContent = steps.length ? (step.type === "pause" ? "Pause" : "Step") : "—";
+      statusBase.textContent = steps.length ? String(base) : "—";
+      statusMult.textContent = steps.length ? String(toMult(step.multiplier ?? 1.0)) : "—";
+      statusDur.textContent  = steps.length ? String(dur) : "—";
+      statusMask.textContent = steps.length ? mask.toString() : "—";
+    }
+
+    function clearPreview() {
+      const clearContainer = (container) => !layers[container.closest(".section").dataset.group] && [...container.querySelectorAll(".box")].forEach(box => box.classList.remove("on"));
+      clearContainer(secondaryBoxes);
+      clearContainer(primaryBoxes);
+      clearContainer(warningBoxes);
+      clearContainer(accessoryBoxes);
+      statusStep.textContent = "—";
+      statusType.textContent = "—";
+      statusBase.textContent = "—";
+      statusMult.textContent = "—";
+      statusDur.textContent  = "—";
+      statusMask.textContent = "—";
+    }
+
+    function renderFilterBar() {
+      filterBarEl.innerHTML = "";
+
+      const hint = document.createElement("div");
+      hint.className = "hint";
+      hint.textContent = "Groups";
+      filterBarEl.appendChild(hint);
+
+      GROUPS.forEach(g => {
+        const ctl = document.createElement("label");
+        ctl.className = "chip";
+        ctl.title = "Show/hide this group in the steps and preview (also limits Export filtered)";
+
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.checked = enabledGroups.has(g.key);
+        chk.addEventListener("change", () => {
+          if (chk.checked) enabledGroups.add(g.key);
+          else enabledGroups.delete(g.key);
+          render();
+          if (!playing && steps.length) setPreview(steps[playIndex]);
+        });
+
+        ctl.appendChild(chk);
+        ctl.appendChild(document.createTextNode(g.label));
+        filterBarEl.appendChild(ctl);
+      });
+
+      const allBtn = document.createElement("button");
+      allBtn.className = "btn btnSmall";
+      allBtn.textContent = "All";
+      allBtn.addEventListener("click", () => {
+        GROUPS.forEach(g => enabledGroups.add(g.key));
+        render();
+        if (!playing && steps.length) setPreview(steps[playIndex]);
+      });
+
+      const noneBtn = document.createElement("button");
+      noneBtn.className = "btn btnSmall";
+      noneBtn.textContent = "None";
+      noneBtn.addEventListener("click", () => {
+        enabledGroups.clear();
+        render();
+        if (!playing && steps.length) setPreview(steps[playIndex]);
+      });
+
+      filterBarEl.appendChild(allBtn);
+      filterBarEl.appendChild(noneBtn);
+
+      const spacer = document.createElement("div");
+      spacer.className = "spacer";
+      filterBarEl.appendChild(spacer);
+
+      const flashPill = document.createElement("label");
+      flashPill.className = "pill";
+      flashPill.title = "Global base flash speed (ms)";
+      flashPill.appendChild(document.createTextNode("Flash: "));
+      const flashSel = document.createElement("select");
+      flashSel.className = "select";
+      SPEED_OPTIONS.forEach(ms => {
+        const opt = document.createElement("option");
+        opt.value = String(ms);
+        opt.textContent = `${ms}ms`;
+        if (ms === globalFlashMs) opt.selected = true;
+        flashSel.appendChild(opt);
+      });
+      flashSel.addEventListener("change", () => {
+        globalFlashMs = Number(flashSel.value);
+        render();
+        if (!playing && steps.length) setPreview(steps[playIndex]);
+      });
+      flashPill.appendChild(flashSel);
+      filterBarEl.appendChild(flashPill);
+
+      const pausePill = document.createElement("label");
+      pausePill.className = "pill";
+      pausePill.title = "Global base pause speed (ms)";
+      pausePill.appendChild(document.createTextNode("Pause: "));
+      const pauseSel = document.createElement("select");
+      pauseSel.className = "select";
+      SPEED_OPTIONS.forEach(ms => {
+        const opt = document.createElement("option");
+        opt.value = String(ms);
+        opt.textContent = `${ms}ms`;
+        if (ms === globalPauseMs) opt.selected = true;
+        pauseSel.appendChild(opt);
+      });
+      pauseSel.addEventListener("change", () => {
+        globalPauseMs = Number(pauseSel.value);
+        render();
+        if (!playing && steps.length) setPreview(steps[playIndex]);
+      });
+      pausePill.appendChild(pauseSel);
+      filterBarEl.appendChild(pausePill);
+    }
+
+    function iconBtn(label, title, onClick, cls = "") {
+      const b = document.createElement("button");
+      b.className = "iconBtn " + cls;
+      b.textContent = label;
+      b.title = title;
+      b.addEventListener("click", e => { e.stopPropagation(); onClick(); });
+      return b;
+    }
+
+    function selectStep(i) {
+      stopPlayback();
+      playIndex = i;
+      setPreview(steps[i]);
+    }
+
+    let dragFrom = null; // index of the step being dragged
+    let newTarget = null; // library folder a "Create New +" pattern will be saved into
+
+    function render() {
+      rowsEl.innerHTML = "";
+
+      // Preview only shows the groups that are toggled on
+      document.querySelectorAll(".section[data-group]").forEach(s => s.hidden = !enabledGroups.has(s.dataset.group) && !layers[s.dataset.group]);
+
+      if (!steps.length) {
+        const empty = document.createElement("div");
+        empty.className = "emptyNote";
+        empty.textContent = "No steps yet. Click “+ Step” or “+ Pause” to begin.";
+        rowsEl.appendChild(empty);
+        clearPreview();
+        return;
+      }
+
+      const shownGroups = GROUPS.filter(g => enabledGroups.has(g.key));
+
+      steps.forEach((step, i) => {
+        const isPause = step.type === "pause";
+        const row = document.createElement("div");
+        row.className = "row" + (isPause ? " pause" : "");
+        row.dataset.index = String(i);
+        row.addEventListener("click", () => selectStep(i));
+
+        // Drag by the grip only, so the multiplier field stays editable
+        const grip = document.createElement("span");
+        grip.className = "grip";
+        grip.textContent = "⠿";
+        grip.title = "Drag to reorder";
+        grip.addEventListener("mousedown", () => { row.draggable = true; });
+        row.addEventListener("dragstart", e => {
+          dragFrom = i;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", "");
+          row.classList.add("dragging");
+        });
+        row.addEventListener("dragend", () => {
+          row.draggable = false;
+          dragFrom = null;
+          rowsEl.querySelectorAll(".dragging, .dropBefore, .dropAfter").forEach(r => r.classList.remove("dragging", "dropBefore", "dropAfter"));
+        });
+        row.addEventListener("dragover", e => {
+          if (dragFrom === null) return;
+          e.preventDefault();
+          const r = row.getBoundingClientRect();
+          const after = e.clientY > r.top + r.height / 2;
+          row.classList.toggle("dropAfter", after);
+          row.classList.toggle("dropBefore", !after);
+        });
+        row.addEventListener("dragleave", () => row.classList.remove("dropBefore", "dropAfter"));
+        row.addEventListener("drop", e => {
+          e.preventDefault();
+          if (dragFrom === null) return;
+          const after = row.classList.contains("dropAfter");
+          let to = i + (after ? 1 : 0);
+          if (dragFrom < to) to--;
+          const current = steps[playIndex];
+          const [moved] = steps.splice(dragFrom, 1);
+          steps.splice(to, 0, moved);
+          playIndex = Math.max(0, steps.indexOf(current));
+          dragFrom = null;
+          render();
+        });
+
+        const idx = document.createElement("div");
+        idx.className = "stepIndex";
+        idx.innerHTML = `<span>${i + 1}</span><small>${isPause ? "Pause" : "Step"}</small>`;
+        idx.prepend(grip);
+        row.appendChild(idx);
+
+        const body = document.createElement("div");
+        body.className = "rowBody";
+        if (isPause) {
+          body.innerHTML = `<span class="pauseLine"></span><span class="hint">all off · ${effectiveDuration(step)} ms</span>`;
+        } else if (!shownGroups.length) {
+          body.innerHTML = `<span class="hint">No groups shown — enable one above.</span>`;
+        } else {
+          for (const g of shownGroups) {
+            const grp = document.createElement("div");
+            grp.className = "idGroup";
+            grp.innerHTML = `<span class="idGroupLabel">${g.label.slice(0, 3)}</span>`;
+            const btns = document.createElement("div");
+            btns.className = "idBtns";
+            g.ids.forEach((id, n) => {
+              if (g.key === "primary" && n === 4) btns.appendChild(Object.assign(document.createElement("span"), { className: "idGap" }));
+              const b = document.createElement("button");
+              b.className = "sideBtn " + lightClass(id) + (step.sides[id] ? " on" : "");
+              b.textContent = String(id);
+              b.title = `ID ${id} (bit ${ID_BIT[id]})`;
+              b.addEventListener("click", e => {
+                e.stopPropagation();
+                step.sides[id] = !step.sides[id];
+                b.classList.toggle("on", step.sides[id]);
+                if (!playing) { playIndex = i; setPreview(step); }
+              });
+              btns.appendChild(b);
+            });
+            grp.appendChild(btns);
+            body.appendChild(grp);
+          }
+        }
+        row.appendChild(body);
+
+        const controls = document.createElement("div");
+        controls.className = "rowControls";
+
+        const mult = document.createElement("label");
+        mult.className = "multField";
+        mult.title = `Duration multiplier (base ${isPause ? globalPauseMs : globalFlashMs} ms)`;
+        mult.addEventListener("click", e => e.stopPropagation());
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.max = "2";
+        input.step = "0.1";
+        input.value = String(toMult(step.multiplier ?? 1.0));
+        input.addEventListener("change", () => {
+          step.multiplier = toMult(input.value);
+          render();
+          if (!playing) { playIndex = i; setPreview(step); }
+        });
+        mult.append("×", input);
+        controls.appendChild(mult);
+
+        const dup = iconBtn("⧉", "Duplicate", () => {
+          stopPlayback();
+          const copy = { type: step.type, multiplier: toMult(step.multiplier ?? 1.0), sides: { ...step.sides }, uid: newUid() };
+          steps.splice(i + 1, 0, copy);
+          playIndex = i + 1;
+          render();
+        });
+        const del = iconBtn("✕", "Delete", () => {
+          stopPlayback();
+          steps.splice(i, 1);
+          playIndex = Math.max(0, Math.min(playIndex, steps.length - 1));
+          render();
+        }, "danger");
+        controls.append(dup, del);
+        row.appendChild(controls);
+
+        rowsEl.appendChild(row);
+      });
+
+      if (!playing) {
+        playIndex = Math.max(0, Math.min(playIndex, steps.length - 1));
+        setPreview(steps[playIndex]);
+      }
+    }
+
+    function stopPlayback() {
+      const wasPlaying = playing;
+      playing = false;
+      if (playTimer) {
+        clearTimeout(playTimer);
+        playTimer = null;
+      }
+      if (wasPlaying) restartLayers();
+    }
+
+    function playLoop() {
+      if (!playing || !steps.length) return;
+      const step = steps[playIndex];
+      setPreview(step);
+      const dur = effectiveDuration(step);
+      playTimer = setTimeout(() => {
+        playIndex = (playIndex + 1) % steps.length;
+        playLoop();
+      }, dur);
+    }
+
+    addStepBtn.addEventListener("click", () => {
+      stopPlayback();
+      steps.push(makeStep([]));
+      playIndex = steps.length - 1;
+      render();
+      setPreview(steps[playIndex]);
+    });
+
+    addPauseBtn.addEventListener("click", () => {
+      stopPlayback();
+      steps.push(makePause());
+      playIndex = steps.length - 1;
+      render();
+      setPreview(steps[playIndex]);
+    });
+
+    playBtn.addEventListener("click", () => {
+      const hasLayers = Object.keys(layers).length > 0;
+      if (!steps.length && !hasLayers) return;
+      stopPlayback();
+      playing = true;
+      if (hasLayers) restartLayers(); // starts the editor at step 1 too, in sync with the slots
+      else { playIndex = Math.max(0, Math.min(playIndex, steps.length - 1)); playLoop(); }
+    });
+
+    stopBtn.addEventListener("click", () => stopPlayback());
+
+    clearBtn.addEventListener("click", () => {
+      stopPlayback();
+      steps = [];
+      playIndex = 0;
+      render();
+    });
+
+    // ---------- Reforger script (.conf) <-> editor ----------
+    const nameInput = document.getElementById("nameInput");
+    const fileLabel = document.getElementById("fileLabel");
+    const saveBtn = document.getElementById("saveBtn");
+    const saveAsBtn = document.getElementById("saveAsBtn");
+
+    let patternName = "New Pattern";
+    let patternHeader = "DD_EmergencyPatternDef"; // keeps inheritance like `DD_EmergencyPatternDef : "{GUID}path"`
+    let currentEntry = null;                      // library entry being edited, null = not linked to a file
+
+    nameInput.value = patternName;
+    nameInput.addEventListener("input", () => { patternName = nameInput.value; });
+
+    function fmtFloat(n) { return String(Math.round(n * 100) / 100); }
+
+    function patternToConf(name, items, allowedIds = IDS, header = "DD_EmergencyPatternDef") {
+      const out = [`${header} {`, ` Name "${String(name).replace(/"/g, "'")}"`];
+      if (items.length) {
+        out.push(" Steps {");
+        for (const st of items) {
+          if (!st.uid) st.uid = newUid();
+          const cls = st.type === "pause" ? "DD_EmergencyPatternPause" : "DD_EmergencyPatternStep";
+          out.push(`  ${cls} "{${st.uid}}" {`);
+          const mask = computeMask(st, allowedIds);
+          if (mask !== 0n) out.push(`   Mask ${mask}`);
+          const mult = toMult(st.multiplier ?? 1.0);
+          if (mult !== 1) out.push(`   Duration ${fmtFloat(mult)}`);
+          out.push("  }");
+        }
+        out.push(" }");
+      }
+      out.push("}");
+      return out.join("\n"); // Workbench writes LF and no trailing newline
+    }
+
+    function parseConf(text) {
+      const head = text.match(/^\s*(DD_EmergencyPatternDef(?:\s*:\s*"[^"]*")?)\s*\{/);
+      if (!head) throw new Error("Not a DD_EmergencyPatternDef");
+      const name = (text.match(/^\s*Name\s+"([^"]*)"/m) || [])[1] ?? "";
+      const items = [];
+      const re = /DD_EmergencyPattern(Step|Pause)\s*(?:"\{([0-9A-Fa-f]+)\}")?\s*\{([^{}]*)\}/g;
+      let m;
+      while ((m = re.exec(text))) {
+        const isPause = m[1] === "Pause";
+        const st = isPause ? makePause() : makeStep([]);
+        if (m[2]) st.uid = m[2].toUpperCase();
+        const maskM = m[3].match(/Mask\s+(-?\d+)/);
+        const durM = m[3].match(/Duration\s+([-\d.eE]+)/);
+        if (durM) st.multiplier = toMult(durM[1]);
+        if (!isPause && maskM) {
+          const mask = BigInt(maskM[1]);
+          IDS.forEach(id => st.sides[id] = ((mask >> BigInt(ID_BIT[id])) & 1n) === 1n);
+        }
+        items.push(st);
+      }
+      return { name, header: head[1], steps: items };
+    }
+
+    function currentConf() {
+      const allowed = exportFilteredChk.checked ? idsForEnabledGroups() : IDS;
+      return patternToConf(patternName, steps, allowed, patternHeader);
+    }
+
+    // Groups whose IDs this pattern actually touches
+    function groupsUsed(items) {
+      return GROUPS.filter(g => items.some(st => st.type !== "pause" && g.ids.some(id => st.sides[id])));
+    }
+
+    function applyPattern(p, entry) {
+      const wasPlaying = playing;
+      stopPlayback();
+      patternName = p.name;
+      patternHeader = p.header;
+      steps = p.steps;
+      playIndex = 0;
+      currentEntry = entry || null;
+      const used = groupsUsed(steps);
+      if (used.length) {
+        enabledGroups.clear();
+        used.forEach(g => enabledGroups.add(g.key));
+      }
+      nameInput.value = patternName;
+      updateFileLabel();
+      renderFilterBar();
+      render();
+      renderLibrary();
+      if (!steps.length) return clearPreview();
+      setPreview(steps[0]);
+      if (wasPlaying) { playing = true; playLoop(); } // keep the preview running on the new pattern
+    }
+
+    function updateFileLabel() {
+      fileLabel.textContent = currentEntry ? `Editing ${currentEntry.path}`
+        : newTarget ? `New pattern — Save creates it in ${newTarget}/` : "Not linked to a file";
+    }
+
+    function downloadText(filename, text) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    async function writeHandle(handle, text) {
+      const w = await handle.createWritable();
+      await w.write(text);
+      await w.close();
+    }
+
+    // Creates <folder>/<name>.conf (+ .meta, + set entry) for a pattern started from a "Create New +" card
+    async function createInFolder(folder) {
+      let dir = libraryDir;
+      if (folder !== ".") for (const p of folder.split("/")) dir = await dir.getDirectoryHandle(p);
+      const suggested = (patternName || "Pattern").replace(/[^\w\-]+/g, "_");
+      const stem = prompt(`File name in ${folder}/ (without .conf)`, suggested)?.trim().replace(/\.conf$/i, "");
+      if (!stem) return;
+      try { await dir.getFileHandle(stem + ".conf"); return alert(`${stem}.conf already exists in ${folder}/`); } catch { /* free */ }
+      const h = await dir.getFileHandle(stem + ".conf", { create: true });
+      await writeHandle(h, currentConf());
+      await registerNewFile(h, false);
+      newTarget = null;
+      await scanDirectory();
+      currentEntry = library.find(e => e.path === (folder === "." ? "" : folder + "/") + stem + ".conf") || null;
+      updateFileLabel();
+      renderLibrary();
+    }
+
+    async function saveCurrent() {
+      if (!currentEntry?.handle && newTarget && libraryDir) {
+        try { return await createInFolder(newTarget); }
+        catch (e) { return alert("Save failed: " + (e?.message || String(e))); }
+      }
+      if (!currentEntry?.handle) return saveAs();
+      const text = currentConf();
+      try {
+        await writeHandle(currentEntry.handle, text);
+        currentEntry.text = text;
+        currentEntry.parsed = parseConf(text);
+        if (libraryDir) await scanDirectory(); else renderLibrary(); // also refreshes patterns.js
+        fileLabel.textContent = `Saved ${currentEntry.path} at ${new Date().toLocaleTimeString()}`;
+      } catch (e) {
+        alert("Save failed: " + (e?.message || String(e)));
+      }
+    }
+
+    async function saveAs() {
+      // A copy must not share inline object IDs with its source file
+      if (currentEntry) steps.forEach(st => st.uid = newUid());
+      const text = currentConf();
+      const suggestedName = (patternName || "Pattern").replace(/[^\w\-]+/g, "_") + ".conf";
+      if (!window.showSaveFilePicker) return downloadText(suggestedName, text);
+      try {
+        const h = await showSaveFilePicker({
+          suggestedName,
+          startIn: libraryDir || undefined,
+          types: [{ description: "Reforger config", accept: { "text/plain": [".conf"] } }]
+        });
+        await writeHandle(h, text);
+        currentEntry = null;
+        if (libraryDir) await registerNewFile(h);
+        if (libraryDir) {
+          await scanDirectory();
+          for (const e of library) if (e.handle && await e.handle.isSameEntry(h)) currentEntry = e;
+        }
+        updateFileLabel();
+        renderLibrary();
+      } catch (e) {
+        if (e?.name !== "AbortError") alert("Save failed: " + (e?.message || String(e)));
+      }
+    }
+
+    // Same .meta Workbench writes for a .conf; the GUID is what sets and vehicles reference
+    const META_TEMPLATE = (guid, path) => `MetaFileClass {
+ Name "{${guid}}${path}"
+ Configurations {
+  CONFResourceClass PC {
+  }
+  CONFResourceClass XBOX_ONE : PC {
+  }
+  CONFResourceClass XBOX_SERIES : PC {
+  }
+  CONFResourceClass PS4 : PC {
+  }
+  CONFResourceClass PS5 : PC {
+  }
+  CONFResourceClass HEADLESS : PC {
+  }
+  CONFResourceClass Xbox : PC {
+  }
+ }
+}`;
+    const RESOURCE_PREFIX = "Configs/Vehicle/ELS/Patterns/";
+
+    // A .conf saved inside the Patterns folder gets a .meta (new GUID) and can join the set for its folder
+    async function registerNewFile(h, ask = true) {
+      const parts = await libraryDir.resolve(h);
+      if (!parts) return; // saved outside the library
+      let dir = libraryDir;
+      for (const p of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(p);
+      const metaName = parts.at(-1) + ".meta";
+      try { await dir.getFileHandle(metaName); return; } catch { /* no meta yet */ }
+      const guid = newUid();
+      const path = RESOURCE_PREFIX + parts.join("/");
+      await writeHandle(await dir.getFileHandle(metaName, { create: true }), META_TEMPLATE(guid, path));
+
+      // The set whose members mostly live in this folder
+      const folder = parts.slice(0, -1).join("/") || ".";
+      const folderGuids = new Set(library.filter(e => e.folder === folder).map(e => e.guid));
+      const set = patternSets
+        .map(s => ({ s, n: s.members.filter(g => folderGuids.has(g)).length }))
+        .sort((a, b) => b.n - a.n)[0];
+      if (!set?.n || !set.s.handle || ask && !confirm(`Add "${patternName}" to ${set.s.name}? (inserted before OFF)`)) return;
+      const offGuid = set.s.members.find(g => library.find(e => e.guid === g)?.parsed.name === "OFF");
+      const line = `  "{${guid}}${path}"`;
+      const lines = set.s.text.split("\n");
+      let at = offGuid ? lines.findIndex(l => l.includes(`{${offGuid}}`)) : -1;
+      if (at < 0) at = lines.findLastIndex(l => /^\s*"\{/.test(l)) + 1;
+      lines.splice(at, 0, line);
+      await writeHandle(set.s.handle, lines.join("\n"));
+    }
+
+    saveBtn.addEventListener("click", saveCurrent);
+    saveAsBtn.addEventListener("click", saveAs);
+
+    exportBtn.addEventListener("click", () => {
+      ioBox.value = currentConf();
+      navigator.clipboard?.writeText(ioBox.value).catch(() => {});
+    });
+
+    importBtn.addEventListener("click", () => {
+      const raw = (ioBox.value || "").trim();
+      if (!raw) return;
+      if (/^[\[{]/.test(raw)) return importJson(raw);
+      try {
+        applyPattern(parseConf(raw), null);
+      } catch (e) {
+        alert("Import failed: " + (e?.message || String(e)));
+      }
+    });
+
+    // ---------- Library (folder of .conf files) ----------
+    const libraryListEl = document.getElementById("libraryList");
+    const libSubtitle = document.getElementById("libSubtitle");
+    const openFolderBtn = document.getElementById("openFolderBtn");
+    const rescanBtn = document.getElementById("rescanBtn");
+    const folderInput = document.getElementById("folderInput");
+
+    let libraryDir = null; // FileSystemDirectoryHandle when opened via showDirectoryPicker (read/write)
+    let library = [];      // { path, folder, file, text, parsed, guid, handle }
+    let patternSets = [];  // { path, name, members: [guid] }
+
+    const natural = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+    // files: [{ path, text, handle? }] including .meta files
+    function ingest(files) {
+      const metaGuid = {};
+      for (const f of files) {
+        if (!f.path.endsWith(".conf.meta")) continue;
+        const m = f.text.match(/Name\s+"\{([0-9A-Fa-f]{16})\}/);
+        if (m) metaGuid[f.path.slice(0, -5)] = m[1].toUpperCase();
+      }
+      library = [];
+      patternSets = [];
+      for (const f of files) {
+        if (!f.path.endsWith(".conf")) continue;
+        if (/(^|\/)EmptyPattern\.conf$/.test(f.path)) continue; // template, not a real pattern
+        const parts = f.path.split("/");
+        const base = { path: f.path, file: parts.at(-1), folder: parts.slice(0, -1).join("/") || ".", guid: metaGuid[f.path], handle: f.handle, text: f.text };
+        if (/^\s*DD_EmergencyPatternSet\b/.test(f.text)) {
+          const members = [...f.text.matchAll(/"\{([0-9A-Fa-f]{16})\}[^"]*"/g)].map(m => m[1].toUpperCase());
+          patternSets.push({ ...base, name: base.file.replace(/\.conf$/, ""), members });
+        } else if (/^\s*DD_EmergencyPatternDef\b/.test(f.text)) {
+          try { library.push({ ...base, parsed: parseConf(f.text) }); } catch { /* skip unparsable */ }
+        }
+      }
+      // Same order as in game (position in its set), then by file name for patterns not in a set
+      const setPos = {};
+      patternSets.forEach(s => s.members.forEach((g, i) => { setPos[g] ??= i; }));
+      const pos = e => setPos[e.guid] ?? Infinity;
+      const stem = e => e.file.replace(/\.conf$/, "");
+      library.sort((a, b) => natural.compare(a.folder, b.folder) || (pos(a) - pos(b) || 0) || natural.compare(stem(a), stem(b)));
+      if (currentEntry) currentEntry = library.find(e => e.path === currentEntry.path) || null;
+      updateFileLabel();
+      renderLibrary();
+    }
+
+    // uiRoot = the folder holding this HTML + Patterns/ (patterns.js is written there).
+    // Its handle is remembered in IndexedDB so later launches reconnect without a picker.
+    let uiRoot = null;
+
+    function handleStore(mode, fn) {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open("ELS_PatternUI", 1);
+        req.onupgradeneeded = () => req.result.createObjectStore("handles");
+        req.onerror = () => reject(req.error);
+        req.onsuccess = () => {
+          const tx = req.result.transaction("handles", mode);
+          const r = fn(tx.objectStore("handles"));
+          tx.oncomplete = () => resolve(r?.result);
+          tx.onerror = () => reject(tx.error);
+        };
+      });
+    }
+    const saveRootHandle = h => handleStore("readwrite", s => s.put(h, "root")).catch(() => {});
+    const loadRootHandle = () => handleStore("readonly", s => s.get("root")).catch(() => null);
+
+    async function setRoot(dir) {
+      let patternsDir = null;
+      try { patternsDir = await dir.getDirectoryHandle("Patterns"); } catch { /* picked Patterns itself */ }
+      uiRoot = patternsDir ? dir : null;
+      libraryDir = patternsDir || dir;
+      rescanBtn.disabled = false;
+      openFolderBtn.textContent = "Open Patterns Folder";
+      await saveRootHandle(dir);
+      await scanDirectory();
+    }
+
+    // Rewrites patterns.js next to the HTML so opening the page without folder access still lists everything
+    async function writeBundle(files) {
+      if (!uiRoot) return false;
+      const sorted = files.slice().sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+      const js = "window.ELS_PATTERNS = {\n" + sorted.map(f => `  ${JSON.stringify(f.path)}: ${JSON.stringify(f.text)}`).join(",\n") + "\n};\n";
+      try {
+        const h = await uiRoot.getFileHandle("patterns.js", { create: true });
+        if ((await (await h.getFile()).text()) !== js) await writeHandle(h, js);
+        return true;
+      } catch { return false; }
+    }
+
+    async function scanDirectory() {
+      const files = [];
+      async function walk(dir, prefix) {
+        for await (const [name, h] of dir.entries()) {
+          if (h.kind === "directory") await walk(h, prefix + name + "/");
+          else if (name.endsWith(".conf") || name.endsWith(".conf.meta"))
+            files.push({ path: prefix + name, text: await (await h.getFile()).text(), handle: h });
+        }
+      }
+      await walk(libraryDir, "");
+      const bundled = await writeBundle(files);
+      libSubtitle.textContent = `${uiRoot ? uiRoot.name + "/" : ""}${libraryDir.name}/ — click a pattern to edit, Save writes straight back to the file.` +
+        (bundled ? " patterns.js updated." : uiRoot ? "" : " (Pick the folder containing the HTML to also keep patterns.js updated.)");
+      ingest(files);
+    }
+
+    async function connectFolder() {
+      if (!window.showDirectoryPicker) return folderInput.click();
+      try {
+        const remembered = !libraryDir && await loadRootHandle();
+        if (remembered && await remembered.requestPermission({ mode: "readwrite" }) === "granted") return await setRoot(remembered);
+        await setRoot(await showDirectoryPicker({ id: "els-ui", mode: "readwrite" }));
+      } catch (e) {
+        if (e?.name !== "AbortError") alert("Could not open folder: " + (e?.message || String(e)));
+      }
+    }
+    openFolderBtn.addEventListener("click", connectFolder);
+
+    rescanBtn.addEventListener("click", () => libraryDir && scanDirectory());
+
+    // Fallback for browsers without the File System Access API: read-only, Save downloads instead
+    folderInput.addEventListener("change", async () => {
+      const files = [];
+      for (const f of folderInput.files) {
+        if (!f.name.endsWith(".conf") && !f.name.endsWith(".conf.meta")) continue;
+        files.push({ path: f.webkitRelativePath.split("/").slice(1).join("/"), text: await f.text() });
+      }
+      libSubtitle.textContent = "Read-only (this browser can't write files) — Save will download the .conf.";
+      ingest(files);
+    });
+
+    function patternSignature(items) {
+      return items.map(st => (st.type === "pause" ? "_" : computeMask(st).toString()) + "x" + toMult(st.multiplier ?? 1.0)).join(",");
+    }
+
+    // ---------- Library card playback (Hover Play / Auto Play) ----------
+    const hoverPlayBtn = document.getElementById("hoverPlayBtn");
+    const autoPlayBtn = document.getElementById("autoPlayBtn");
+    let libPlayMode = "hover";
+    let libPlayers = [];
+
+    // Auto Play only runs cards actually scrolled into view in the library list
+    const libObserver = new IntersectionObserver(entries => {
+      for (const en of entries) {
+        const p = en.target._player;
+        if (!p) continue;
+        p.visible = en.isIntersecting;
+        if (libPlayMode === "auto") p.visible ? p.start() : p.stop();
+      }
+    }, { root: libraryListEl });
+
+    function setLibPlayMode(mode) {
+      libPlayMode = mode;
+      hoverPlayBtn.classList.toggle("active", mode === "hover");
+      autoPlayBtn.classList.toggle("active", mode === "auto");
+      libPlayers.forEach(p => (mode === "auto" && p.visible) ? p.start() : p.stop());
+    }
+    hoverPlayBtn.addEventListener("click", () => setLibPlayMode("hover"));
+    autoPlayBtn.addEventListener("click", () => setLibPlayMode("auto"));
+
+    // One row of lights for the IDs the pattern uses. Idle = first frame at 50%; playing = full flash.
+    function miniPreview(items, cardEl) {
+      const wrap = document.createElement("div");
+      wrap.className = "mini";
+      const ids = groupsUsed(items).flatMap(g => g.ids);
+      if (!ids.length) {
+        wrap.innerHTML = `<span class="libFile">all off</span>`;
+        return wrap;
+      }
+      const row = document.createElement("div");
+      row.className = "miniStep";
+      const cells = ids.map(id => {
+        const c = document.createElement("div");
+        c.className = "miniCell " + lightClass(id);
+        row.appendChild(c);
+        return c;
+      });
+      wrap.appendChild(row);
+
+      const show = st => cells.forEach((c, i) => c.classList.toggle("on", st.type !== "pause" && !!st.sides[ids[i]]));
+      const firstFrame = items.find(st => st.type !== "pause") || items[0];
+      let timer = null, idx = 0;
+      const tick = () => {
+        show(items[idx]);
+        timer = setTimeout(tick, effectiveDuration(items[idx]));
+        idx = (idx + 1) % items.length;
+      };
+      const player = {
+        visible: false,
+        start() { if (timer) return; idx = 0; row.classList.add("playing"); tick(); },
+        stop() { clearTimeout(timer); timer = null; row.classList.remove("playing"); show(firstFrame); }
+      };
+      player.stop();
+      cardEl._player = player;
+      libPlayers.push(player);
+      libObserver.observe(cardEl);
+      cardEl.addEventListener("mouseenter", () => { if (libPlayMode === "hover") player.start(); });
+      cardEl.addEventListener("mouseleave", () => { if (libPlayMode === "hover") player.stop(); });
+      return wrap;
+    }
+
+    // Dragging a card within its folder reorders it in its set file (= in-game cycle order)
+    let libDrag = null; // { entry, folder }
+    function makeLibDraggable(b, e, folder) {
+      b.draggable = true;
+      b.addEventListener("dragstart", ev => {
+        libDrag = { entry: e, folder };
+        ev.dataTransfer.effectAllowed = "move";
+        ev.dataTransfer.setData("text/plain", "");
+        b.classList.add("dragging");
+      });
+      b.addEventListener("dragend", () => {
+        libDrag = null;
+        libraryListEl.querySelectorAll(".dragging, .dropBefore, .dropAfter").forEach(x => x.classList.remove("dragging", "dropBefore", "dropAfter"));
+      });
+      b.addEventListener("dragover", ev => {
+        if (!libDrag || libDrag.folder !== folder || libDrag.entry === e) return;
+        ev.preventDefault();
+        const r = b.getBoundingClientRect();
+        const after = ev.clientX > r.left + r.width / 2;
+        b.classList.toggle("dropAfter", after);
+        b.classList.toggle("dropBefore", !after);
+      });
+      b.addEventListener("dragleave", () => b.classList.remove("dropBefore", "dropAfter"));
+      b.addEventListener("drop", async ev => {
+        ev.preventDefault();
+        if (!libDrag || libDrag.folder !== folder) return;
+        const moved = libDrag.entry, after = b.classList.contains("dropAfter");
+        libDrag = null;
+        try { await moveInSet(moved.guid, e.guid, after); }
+        catch (err) { alert("Reorder failed: " + (err?.message || String(err))); }
+      });
+    }
+
+    async function moveInSet(guid, targetGuid, after) {
+      const set = patternSets.find(s => s.members.includes(guid) && s.members.includes(targetGuid));
+      if (!set?.handle) return;
+      const lines = set.text.split("\n");
+      const slots = []; // indexes of member lines, in file order
+      const lineOf = {};
+      lines.forEach((l, i) => {
+        const m = l.match(/^\s*"\{([0-9A-Fa-f]{16})\}/);
+        if (m) { slots.push(i); lineOf[m[1].toUpperCase()] = l; }
+      });
+      const order = set.members.filter(g => g !== guid);
+      order.splice(order.indexOf(targetGuid) + (after ? 1 : 0), 0, guid);
+      order.forEach((g, n) => { lines[slots[n]] = lineOf[g]; });
+      await writeHandle(set.handle, lines.join("\n"));
+      await scanDirectory();
+    }
+
+    function renderLibrary() {
+      // Re-point loaded slots at the rescanned entries so their dropdowns stay selected
+      for (const key in layers) layers[key].entry = library.find(e => e.path === layers[key].entry.path) || layers[key].entry;
+      renderSlots();
+      if (!library.length && !patternSets.length) return;
+      libPlayers.forEach(p => p.stop());
+      libPlayers = [];
+      libObserver.disconnect();
+      libraryListEl.innerHTML = "";
+
+      // Where each pattern sits in the in-game cycle order
+      const setInfo = {};
+      const issues = [];
+      for (const s of patternSets) {
+        const seen = new Set();
+        s.members.forEach((g, i) => {
+          (setInfo[g] ||= []).push(`${s.name} #${i + 1}`);
+          if (seen.has(g)) issues.push(`${s.name}: lists ${library.find(e => e.guid === g)?.file || g} more than once`);
+          seen.add(g);
+          if (!library.some(e => e.guid === g)) issues.push(`${s.name}: entry #${i + 1} ({${g}}) not found in this folder`);
+        });
+      }
+
+      const bySig = {};
+      library.forEach(e => {
+        const sig = patternSignature(e.parsed.steps);
+        if (e.parsed.steps.length) (bySig[sig] ||= []).push(e);
+      });
+
+      if (issues.length) {
+        const box = document.createElement("div");
+        box.className = "libIssues";
+        issues.forEach(t => { const d = document.createElement("div"); d.textContent = "⚠ " + t; box.appendChild(d); });
+        libraryListEl.appendChild(box);
+      }
+
+      const folders = [...new Set(library.map(e => e.folder))];
+      for (const folder of folders) {
+        const group = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "libGroupTitle";
+        title.textContent = folder === "." ? "(top level)" : folder;
+        group.appendChild(title);
+
+        const items = document.createElement("div");
+        items.className = "libItems";
+        for (const e of library.filter(x => x.folder === folder)) {
+          const b = document.createElement("button");
+          b.className = "libItem" + (e === currentEntry ? " active" : "");
+          b.innerHTML = `<div class="libName"></div><div class="libFile"></div>`;
+          b.querySelector(".libName").textContent = e.parsed.name || "(no name)";
+          const sets = e.guid ? setInfo[e.guid] : null;
+          b.querySelector(".libFile").textContent = e.file + (sets ? " · " + [...new Set(sets)].join(", ") : "");
+          b.appendChild(miniPreview(e.parsed.steps, b));
+
+          const warns = [];
+          if (e.guid && !sets && patternSets.length) warns.push("not in any set");
+          const twins = (bySig[patternSignature(e.parsed.steps)] || []).filter(x => x !== e);
+          if (twins.length) warns.push("same as " + twins.map(x => x.file).join(", "));
+          if (warns.length) {
+            const w = document.createElement("div");
+            w.className = "libWarn";
+            w.textContent = warns.join(" · ");
+            b.appendChild(w);
+          }
+
+          b.addEventListener("click", () => { newTarget = null; applyPattern(parseConf(e.text), e); });
+          if (libraryDir && e.guid && sets) makeLibDraggable(b, e, folder);
+          items.appendChild(b);
+        }
+
+        // Blank pattern whose Save creates a file in this folder
+        const add = document.createElement("button");
+        add.className = "libItem newCard" + (!currentEntry && newTarget === folder ? " active" : "");
+        add.textContent = "Create New +";
+        add.title = `New pattern in ${folder}/`;
+        add.addEventListener("click", async () => {
+          // Creating files needs write access; ask for the folder first if the page only has patterns.js
+          if (!libraryDir) await connectFolder();
+          if (!libraryDir) return;
+          applyPattern({ name: "New Pattern", header: "DD_EmergencyPatternDef", steps: [] }, null);
+          newTarget = folder;
+          updateFileLabel();
+          renderLibrary();
+          nameInput.focus();
+          nameInput.select();
+        });
+        items.appendChild(add);
+        group.appendChild(items);
+        libraryListEl.appendChild(group);
+      }
+    }
+
+    // Legacy JSON import (from the old Export JSON button)
+    function importJson(raw) {
+      stopPlayback();
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (parsed.globals) {
+          if (SPEED_OPTIONS.includes(Number(parsed.globals.flashMs))) globalFlashMs = Number(parsed.globals.flashMs);
+          if (SPEED_OPTIONS.includes(Number(parsed.globals.pauseMs))) globalPauseMs = Number(parsed.globals.pauseMs);
+          if (Array.isArray(parsed.globals.enabledGroups)) {
+            enabledGroups.clear();
+            parsed.globals.enabledGroups.forEach(k => {
+              if (GROUPS.some(g => g.key === k)) enabledGroups.add(k);
+            });
+          }
+        }
+
+        const arr = Array.isArray(parsed.items) ? parsed.items : (Array.isArray(parsed) ? parsed : []);
+        steps = arr.map(item => {
+          const st = (item.type === "pause") ? makePause() : makeStep([]);
+          st.multiplier = toMult(item.multiplier ?? 1.0);
+
+          const sides = {};
+          IDS.forEach(id => sides[id] = false);
+
+          const act = Array.isArray(item.activeIDs) ? item.activeIDs : [];
+          act.forEach(v => {
+            const id = Number(v);
+            if (IDS.includes(id)) sides[id] = true;
+          });
+
+          if (item.sides && typeof item.sides === "object") {
+            IDS.forEach(id => {
+              if (typeof item.sides[id] === "boolean") sides[id] = item.sides[id];
+              if (typeof item.sides[String(id)] === "boolean") sides[id] = item.sides[String(id)];
+            });
+          }
+
+          if (item.mask !== undefined && item.mask !== null) {
+            const mask = BigInt(item.mask);
+            IDS.forEach(id => {
+              sides[id] = (((mask >> BigInt(ID_BIT[id])) & 1n) === 1n);
+            });
+          }
+
+          st.sides = sides;
+          return st;
+        });
+
+        playIndex = 0;
+        currentEntry = null;
+        updateFileLabel();
+        renderFilterBar();
+        render();
+        if (steps.length) setPreview(steps[0]);
+        else clearPreview();
+      } catch (e) {
+        alert("Import failed: " + (e?.message || String(e)));
+      }
+    }
+
+    // Init
+    renderFilterBar();
+    render();
+    renderSlots();
+
+    // Bundled patterns (patterns.js, written by this page whenever it scans the folder). Shown
+    // immediately; if the folder was opened before and access is still granted, rescan it live.
+    if (window.ELS_PATTERNS) {
+      ingest(Object.entries(window.ELS_PATTERNS).map(([path, text]) => ({ path, text })));
+      libSubtitle.textContent = "Bundled patterns (read-only). Open Patterns Folder to save edits to the files.";
+    }
+    (async () => {
+      const remembered = window.showDirectoryPicker && await loadRootHandle();
+      if (!remembered) return;
+      if (await remembered.queryPermission({ mode: "readwrite" }) === "granted") return setRoot(remembered).catch(() => {});
+      openFolderBtn.textContent = `Reconnect ${remembered.name}`; // one click, no picker
+    })();
+  </script>
+</body>
+</html>
