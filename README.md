@@ -2,6 +2,8 @@
 
 Emergency Lighting System for Arma Reforger by Delta District. Multiplayer-synced, multi-stage emergency lights with independent light groups, live pattern and speed control, and a browser-based pattern builder.
 
+![Thumbnail](thumbnail.png)
+
 ## Features
 
 - **Four independent light groups**: Primary, Secondary, Warning and Accessory, each running its own pattern and timer.
@@ -58,14 +60,14 @@ Patterns are `DD_EmergencyPatternDef` configs, grouped into `DD_EmergencyPattern
 
 `ELS_PatternUI.html` is a standalone editor that runs in your browser. Nothing needs to be installed.
 
-![Pattern Builder overview](docs/images/pattern-library.png)
+![Pattern Library overview](docs/images/pattern-library.png)
 
 - **Pattern library**: open your addon's `Patterns` folder to load every pattern set. Patterns are listed by group. Drag them to reorder, which also updates the set file. Use **Create New** to start a new pattern. Click the library header to collapse it, and use the dropdown to switch between half and full height.
 - **Step editor**: add steps and pauses with **+ Step** and **+ Pause**. Click IDs to turn them on or off. Set each step's duration multiplier, and drag steps to reorder them.
 - **Live preview**: press **Play** to see the pattern at the chosen flash and pause speed. Hover Play and Auto Play preview library patterns without opening them.
 - **Combined preview**: load a library pattern into each group's slot (Primary, Secondary, Warning, Accessory) to see them running together on independent timers, as they would on a vehicle.
 
-  ![Combined preview](docs/images/pattern-builder.png)
+  ![Pattern Builder overview](docs/images/pattern-builder.png)
 - **Warning 2x**: shows two lights per warning ID, for vehicles with doubled warning lights. This only changes the preview.
 - **Save / Import / Export**: patterns are written as Reforger `.conf` files, ready for Workbench.
 
